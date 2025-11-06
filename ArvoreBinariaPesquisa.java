@@ -91,7 +91,8 @@ public class ArvoreBinariaPesquisa
         if (node == null)
             throw new IllegalArgumentException("Não foi possivel encontrar o nodo passado");
         
-        return 0;
+        Nodo son = node.filhosDaEsquerda;
+        return (son != null) ? son.valor : null;
     }
 
     public Integer getRight(Integer e)
@@ -100,24 +101,25 @@ public class ArvoreBinariaPesquisa
     
         if (node == null)
             throw new IllegalArgumentException("Não foi possivel encontrar o nodo passado");
-        
-
-        return 0;
+    
+        Nodo son = node.filhosDaDireita;
+        return (son != null) ? son.valor : null;
     }
 
     public boolean hasRight(Integer element)
     {
-        return false;
+        return (findNode(raiz, element).filhosDaDireita != null);
     }
     
     public boolean hasLeft(Integer element)
     {
-        return false;
+        return (findNode(raiz, element).filhosDaEsquerda != null);
     }
     
     public Integer getParent(Integer e)
     {
-        return 0;
+        Nodo father = findNode(raiz, nNodos).pai;
+        return (father != null) ? father.valor : null;
     }    
     
     // Nao precisa ser implementado
