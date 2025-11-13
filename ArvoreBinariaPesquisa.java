@@ -17,11 +17,15 @@ public class ArvoreBinariaPesquisa
         public int valor;
         public Nodo filhosDaEsquerda;
         public Nodo filhosDaDireita;
+        public int avl;
+        public int nivel;
 
         public Nodo(int v) 
         {
             pai=filhosDaEsquerda=filhosDaDireita=null;            
             this.valor=v;
+            avl = 0;
+            nivel = 0;
         }
     }
 
@@ -36,7 +40,8 @@ public class ArvoreBinariaPesquisa
         Nodo aux = new Nodo(e);
         if(nNodos==0)
             raiz=aux;
-        else{
+        else
+        {
             Nodo pai = findFather(raiz, e);
             aux.pai=pai;
             // 10 >= 17 
@@ -45,7 +50,23 @@ public class ArvoreBinariaPesquisa
             else
                 pai.filhosDaDireita=aux;
         }
+        aux.nivel = level(aux);
+
         nNodos++;
+    }
+  
+    private boolean checkAvlAllTree(Nodo ref)
+    {
+        Nodo aux = ref;
+        boolean hadTransformation = false;
+
+        while(aux != null)
+        {
+            
+
+        }
+
+        return hadTransformation;
     }
 
     private Nodo findFather(Nodo ref, Integer e)
@@ -71,12 +92,17 @@ public class ArvoreBinariaPesquisa
 
     public boolean isInternal(Integer e)
     {
-        return false;
+        return !isExternal(e);
     }
 
     public boolean isExternal(Integer e)
     {
-        return false;
+        Nodo node = findNode(raiz, nNodos);
+    
+        if (node == null)
+            throw new IllegalArgumentException("Não foi possivel encontrar o nodo passado");
+
+        return (node.filhosDaEsquerda == null && node.filhosDaDireita == null);
     }
     
     public boolean contains(Integer e)
@@ -157,6 +183,22 @@ public class ArvoreBinariaPesquisa
         }
 
         return nivel;
+    }
+
+    public int level(Nodo e)
+    {
+        if(e==null) 
+            return -1;
+
+        int nivel=0;
+
+        while(e.pai!=null)
+        {
+            nivel++;
+            e= e.pai;
+        }
+
+        return nivel;
         
     }
 
@@ -166,10 +208,12 @@ public class ArvoreBinariaPesquisa
         if(ref!=null){
 
             // se for um nodo folha entao calcula o nivel
-            if((ref.filhosDaEsquerda==null)&&(ref.filhosDaDireita==null)){
+            if((ref.filhosDaEsquerda==null)&&(ref.filhosDaDireita==null))
+            {
                 int nvl=0;
                 Nodo aux=ref;
-                while(aux.pai!=null){
+                while(aux.pai!=null)
+                {
                     nvl++;
                     aux=aux.pai;
                 }
@@ -211,7 +255,7 @@ public class ArvoreBinariaPesquisa
 
     public int height()
     {
-        // navega em pre ordem
+        // navega em largura
         // alternativas 1 e 2
         //return navegaPelosNodos2(raiz, -1);
 
@@ -287,6 +331,7 @@ public class ArvoreBinariaPesquisa
         return resultado;
     }
  
+ //
     private int caminhamentoEmProfundidade(Nodo ref, Integer[] lst, int idx, profundidade tipo)
     {
 
