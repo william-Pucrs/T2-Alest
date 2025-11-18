@@ -51,9 +51,36 @@ public class ArvoreBinariaPesquisa
             else
                 pai.filhosDaDireita=aux;
         }
-        aux.nivel = aux.pai.nivel+1;
+        aux.nivel = (aux != raiz) ? aux.pai.nivel+1 : 0;
+
+        updateAVL(aux);
+        checkAVLOnBranch(aux);
 
         nNodos++;
+    }
+
+    public boolean removeBranch(Integer e)
+    {
+        Nodo removedNode = findNode(raiz, e);
+
+        if (removedNode == null) return false;
+
+        Nodo father = removedNode.pai;
+        
+        int numOfRemovedNodes = positionsPre(removedNode).length;
+
+        if (father.filhosDaDireita == removedNode)
+            father.filhosDaDireita = null;
+        else
+            father.filhosDaEsquerda = null;
+
+        removedNode.pai = null;
+
+        updateAVL(father);
+        checkAVLOnBranch(father);
+
+        nNodos -= numOfRemovedNodes;
+        return true;
     }
 
     private void updateAVL(Nodo ref)
@@ -64,19 +91,121 @@ public class ArvoreBinariaPesquisa
             ref = ref.pai;
         }
     }
-  
-    private boolean checkAvlAllTree(Nodo ref)
+
+    private boolean checkAVLOnBranch(Nodo ref)
     {
-        Nodo aux = ref;
         boolean hadTransformation = false;
 
-        while(aux != null)
+        while (ref != null) 
         {
-            
+            if (Math.abs(ref.avl) > 1)
+            {
+                hadTransformation = true;
 
+                if (ref.avl > 0)
+                {
+                    if (ref.filhosDaDireita.avl < 0)
+                        rightRotation(ref);
+                    ref = leftRotation(ref);
+                }
+                else
+                {
+                    if (ref.filhosDaEsquerda.avl > 0)
+                        leftRotation(ref.filhosDaEsquerda); 
+                    ref = rightRotation(ref);
+                }
+            }
+            ref = ref.pai;
+        }
+
+        return hadTransformation;    
+    }
+
+    private boolean checkAVLAllTree()
+    {
+        boolean hadTransformation = false;
+
+        Nodo leafNodes[] = allLeafNodes();
+
+        for(Nodo node : leafNodes)
+        {
+            while (node != null) 
+            {
+                if (Math.abs(node.avl) > 1)
+                {
+                    hadTransformation = true;
+
+                    if (node.avl > 0)
+                    {
+                        if (node.filhosDaDireita.avl < 0)
+                            rightRotation(node);
+                        node = leftRotation(node);
+                    }
+                    else
+                    {
+                        if (node.filhosDaEsquerda.avl > 0)
+                            leftRotation(node.filhosDaEsquerda); 
+                        node = rightRotation(node);
+                    }
+                }
+                node = node.pai;
+            }
         }
 
         return hadTransformation;
+    }
+
+    private Nodo leftRotation(Nodo ref)
+    {
+        Nodo branchRoot = ref.pai;
+        
+        Nodo substitute = ref.filhosDaDireita;
+        Nodo T2 = substitute.filhosDaEsquerda;
+
+        if (branchRoot != null)
+        {
+            if (branchRoot.filhosDaDireita == ref)
+                branchRoot.filhosDaDireita = substitute;
+            else
+                branchRoot.filhosDaEsquerda = substitute;
+        }
+
+        ref.filhosDaDireita = T2;
+        substitute.filhosDaEsquerda = ref;
+        substitute.pai = branchRoot;
+        ref.pai = substitute;
+        
+        if (T2 != null)
+            T2.pai = ref;
+                                    
+        updateAVL(substitute);
+        return substitute;
+    }
+
+    private Nodo rightRotation(Nodo ref)
+    {
+        Nodo branchRoot = ref.pai;
+        Nodo substitute = ref.filhosDaEsquerda;
+        Nodo T2 = substitute.filhosDaDireita;
+
+        if (branchRoot != null)
+        {
+            if (branchRoot.filhosDaDireita == ref)
+                branchRoot.filhosDaDireita = substitute;
+            else
+                branchRoot.filhosDaEsquerda = substitute;
+        }
+
+        substitute.pai = branchRoot;
+        ref.pai = substitute;
+        ref.filhosDaEsquerda = T2;
+        substitute.filhosDaDireita = ref;
+
+        if (T2 != null)
+            T2.pai = ref;
+        
+        updateAVL(substitute);
+        return substitute;
     }
 
     private Nodo findFather(Nodo ref, Integer e)
@@ -281,11 +410,6 @@ public class ArvoreBinariaPesquisa
         return navegaPelosNodos2(ref, -1);
     }
 
-    public boolean removeBranch(Integer e)
-    {
-        return false;
-    }
-
     public boolean isEmpty()
     {
         return (raiz==null);
@@ -311,6 +435,7 @@ public class ArvoreBinariaPesquisa
     
     private boolean isLeaf(Nodo ref)
     {
+        if (ref == null) return false;
         return (ref.filhosDaEsquerda == null && ref.filhosDaDireita == null); 
     }
 
@@ -319,9 +444,14 @@ public class ArvoreBinariaPesquisa
         Nodo list[] = positionsWidth(true);
         
         Stack<Nodo> leafStack = new Stack<>();
-        for (int i = list.length-1; list)
         
-        return null;
+        for (Nodo obj : list)
+        {
+            if (isLeaf(obj))
+                leafStack.push(obj);
+        }
+        
+        return leafStack.toArray(new Nodo[0]);
     }
 
     
@@ -337,6 +467,18 @@ public class ArvoreBinariaPesquisa
         return resultado;
     }
     
+    public Integer[] positionsPre(Nodo ref)
+    {
+        if(nNodos==0) return null;
+
+        Integer[] resultado = new Integer[nNodos];
+
+        //preordem(raiz, resultado, 0);
+        caminhamentoEmProfundidade(ref, resultado, 0, profundidade.Pre);
+
+        return resultado;
+    }
+
     public Integer[] positionsCentral()
     {
         if(nNodos==0) return null;
@@ -458,31 +600,89 @@ public class ArvoreBinariaPesquisa
 
     public static void main(String[] args) 
     {
-        ArvoreBinariaPesquisa abp = new ArvoreBinariaPesquisa();
+        System.out.println("\n===== TESTE 1: Inserções Simples =====");
+        ArvoreBinariaPesquisa avl = new ArvoreBinariaPesquisa();
+
+        int[] valores1 = {40,20,10,30,60,70,50,35,33,37};
+        for (int v : valores1)
+            avl.add(v);
+
+        imprimeTudo(avl);
 
 
-        abp.add(40);
-        abp.add(20);
-        abp.add(10);
-        abp.add(30);
-        abp.add(60);
-        abp.add(70);
-        abp.add(50);
-        abp.add(35);
-        abp.add(33);
-        abp.add(37);
+        System.out.println("\n===== TESTE 2: Caso LL =====");
+        avl = new ArvoreBinariaPesquisa();
+        int[] LL = {30,20,10};
+        for (int v : LL) avl.add(v);
+        imprimeTudo(avl);
 
-        System.out.print("Pre ordem: ");
-        printArray( abp.positionsPre());
-        System.out.print("Pos ordem: ");
-        printArray( abp.positionsPos());
-        System.out.print("Central  : ");
-        printArray( abp.positionsCentral());
-        System.out.print("Largura  : ");
-        printArray( abp.positionsWidth());
 
-        System.out.println("Nivel do nodo 35 = "+abp.level(35));
-        System.out.println("A altura da arvore = "+abp.height());
+        System.out.println("\n===== TESTE 3: Caso RR =====");
+        avl = new ArvoreBinariaPesquisa();
+        int[] RR = {10,20,30};
+        for (int v : RR) avl.add(v);
+        imprimeTudo(avl);
+
+
+        System.out.println("\n===== TESTE 4: Caso LR =====");
+        avl = new ArvoreBinariaPesquisa();
+        int[] LR = {30,10,20};
+        for (int v : LR) avl.add(v);
+        imprimeTudo(avl);
+
+
+        System.out.println("\n===== TESTE 5: Caso RL =====");
+        avl = new ArvoreBinariaPesquisa();
+        int[] RL = {10,30,20};
+        for (int v : RL) avl.add(v);
+        imprimeTudo(avl);
+
+
+        System.out.println("\n===== TESTE 6: Remoção de subárvore =====");
+        avl = new ArvoreBinariaPesquisa();
+        int[] valores2 = {50,30,70,20,40,60,80,10,25};
+        for (int v : valores2) avl.add(v);
+
+        imprimeTudo(avl);
+
+        System.out.println("\n--- Removendo subárvore de 30 ---");
+        avl.removeBranch(30);
+        imprimeTudo(avl);
+
+        System.out.println("\n--- Removendo subárvore de 70 ---");
+        avl.removeBranch(70);
+        imprimeTudo(avl);
+
+
+        System.out.println("\n===== TESTE 7: 20 inserções aleatórias =====");
+        avl = new ArvoreBinariaPesquisa();
+        java.util.Random r = new java.util.Random();
+
+        for (int i = 0; i < 20; i++)
+            avl.add(r.nextInt(100));
+
+        imprimeTudo(avl);
+
+        System.out.println("\nTeste finalizado.");
+    }
+
+    private static void imprimeTudo(ArvoreBinariaPesquisa a)
+    {
+        System.out.print("Pre ordem : ");
+        printArray(a.positionsPre());
+
+        System.out.print("Pos ordem : ");
+        printArray(a.positionsPos());
+
+        System.out.print("Central   : ");
+        printArray(a.positionsCentral());
+
+        System.out.print("Largura   : ");
+        printArray(a.positionsWidth());
+
+        System.out.println("Altura    : " + a.height());
+        System.out.println("Tamanho   : " + a.size());
+        System.out.println("Raiz      : " + a.getRoot());
     }
 
     private static void printArray(Integer[] array)
