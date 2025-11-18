@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 
 import javax.management.AttributeNotFoundException;
 
@@ -50,9 +51,18 @@ public class ArvoreBinariaPesquisa
             else
                 pai.filhosDaDireita=aux;
         }
-        aux.nivel = level(aux);
+        aux.nivel = aux.pai.nivel+1;
 
         nNodos++;
+    }
+
+    private void updateAVL(Nodo ref)
+    {
+        while (ref != null)
+        {
+            ref.avl = -branchHeight(ref.filhosDaEsquerda) + branchHeight(ref.filhosDaDireita);
+            ref = ref.pai;
+        }
     }
   
     private boolean checkAvlAllTree(Nodo ref)
@@ -202,6 +212,7 @@ public class ArvoreBinariaPesquisa
         
     }
 
+    //Node height
     private int navegaPelosNodos1(Nodo ref, int altura)
     {
 
@@ -229,6 +240,7 @@ public class ArvoreBinariaPesquisa
         }
         return altura;
     }
+    //Node height
     private int navegaPelosNodos2(Nodo ref, int altura)
     {
 
@@ -262,8 +274,11 @@ public class ArvoreBinariaPesquisa
         Integer[] largura = positionsWidth();
         int altura = level(largura[largura.length-1]);
         return altura;
+    }
 
-
+    public int branchHeight(Nodo ref)
+    {
+        return navegaPelosNodos2(ref, -1);
     }
 
     public boolean removeBranch(Integer e)
@@ -294,6 +309,21 @@ public class ArvoreBinariaPesquisa
         else return null;
     }
     
+    private boolean isLeaf(Nodo ref)
+    {
+        return (ref.filhosDaEsquerda == null && ref.filhosDaDireita == null); 
+    }
+
+    private Nodo[] allLeafNodes()
+    {
+        Nodo list[] = positionsWidth(true);
+        
+        Stack<Nodo> leafStack = new Stack<>();
+        for (int i = list.length-1; list)
+        
+        return null;
+    }
+
     
     public Integer[] positionsPre()
     {
@@ -395,6 +425,36 @@ public class ArvoreBinariaPesquisa
         return resultado;
 
     }
+
+    public Nodo[] positionsWidth(boolean returnAsNode)
+    {
+        if(nNodos==0) return null;
+        Nodo[] resultado;
+        LinkedList<Nodo> fila;
+        resultado = new Nodo[nNodos];
+        int idx=0;
+
+        fila = new LinkedList<Nodo>();
+        fila.add(raiz);
+
+        do
+        {
+            Nodo aux = fila.remove();
+
+            if(aux.filhosDaEsquerda!=null) fila.add(aux.filhosDaEsquerda);
+            if(aux.filhosDaDireita!=null)  fila.add(aux.filhosDaDireita);
+
+            resultado[idx]=aux;
+            idx++;
+
+        }
+        while(!fila.isEmpty());
+
+        return resultado;
+
+    }
+
+
 
     public static void main(String[] args) 
     {
