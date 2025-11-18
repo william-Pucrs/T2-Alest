@@ -169,6 +169,10 @@ public class ArvoreBinariaPesquisa
             else
                 branchRoot.filhosDaEsquerda = substitute;
         }
+        else
+        {
+            raiz = substitute;
+        }
 
         ref.filhosDaDireita = T2;
         substitute.filhosDaEsquerda = ref;
@@ -178,7 +182,7 @@ public class ArvoreBinariaPesquisa
         if (T2 != null)
             T2.pai = ref;
                                     
-        updateAVL(substitute);
+        updateAVL(ref);
         return substitute;
     }
 
@@ -195,6 +199,10 @@ public class ArvoreBinariaPesquisa
             else
                 branchRoot.filhosDaEsquerda = substitute;
         }
+        else
+        {
+            raiz = substitute;
+        }
 
         substitute.pai = branchRoot;
         ref.pai = substitute;
@@ -204,7 +212,7 @@ public class ArvoreBinariaPesquisa
         if (T2 != null)
             T2.pai = ref;
         
-        updateAVL(substitute);
+        updateAVL(ref);
         return substitute;
     }
 
