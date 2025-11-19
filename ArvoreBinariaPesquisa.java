@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
@@ -67,7 +68,13 @@ public class ArvoreBinariaPesquisa
 
         Nodo father = removedNode.pai;
         
-        int numOfRemovedNodes = positionsPre(removedNode).length;
+        int numOfRemovedNodes = elementsOfBranch(removedNode).length;
+
+        if (father == null)
+        {
+            clear();
+            return true;
+        }
 
         if (father.filhosDaDireita == removedNode)
             father.filhosDaDireita = null;
@@ -105,7 +112,7 @@ public class ArvoreBinariaPesquisa
                 if (ref.avl > 0)
                 {
                     if (ref.filhosDaDireita.avl < 0)
-                        rightRotation(ref);
+                        rightRotation(ref.filhosDaDireita);
                     ref = leftRotation(ref);
                 }
                 else
@@ -119,40 +126,6 @@ public class ArvoreBinariaPesquisa
         }
 
         return hadTransformation;    
-    }
-
-    private boolean checkAVLAllTree()
-    {
-        boolean hadTransformation = false;
-
-        Nodo leafNodes[] = allLeafNodes();
-
-        for(Nodo node : leafNodes)
-        {
-            while (node != null) 
-            {
-                if (Math.abs(node.avl) > 1)
-                {
-                    hadTransformation = true;
-
-                    if (node.avl > 0)
-                    {
-                        if (node.filhosDaDireita.avl < 0)
-                            rightRotation(node);
-                        node = leftRotation(node);
-                    }
-                    else
-                    {
-                        if (node.filhosDaEsquerda.avl > 0)
-                            leftRotation(node.filhosDaEsquerda); 
-                        node = rightRotation(node);
-                    }
-                }
-                node = node.pai;
-            }
-        }
-
-        return hadTransformation;
     }
 
     private Nodo leftRotation(Nodo ref)
@@ -296,7 +269,6 @@ public class ArvoreBinariaPesquisa
     }    
     
     // Nao precisa ser implementado
-
     private Nodo findNode(Nodo ref, int e)
     {
         if(ref!=null)
@@ -350,34 +322,6 @@ public class ArvoreBinariaPesquisa
     }
 
     //Node height
-    private int navegaPelosNodos1(Nodo ref, int altura)
-    {
-
-        if(ref!=null){
-
-            // se for um nodo folha entao calcula o nivel
-            if((ref.filhosDaEsquerda==null)&&(ref.filhosDaDireita==null))
-            {
-                int nvl=0;
-                Nodo aux=ref;
-                while(aux.pai!=null)
-                {
-                    nvl++;
-                    aux=aux.pai;
-                }
-                // se o nivel atual for maior do altura, entao assume a nova altura
-                if(nvl>altura) return nvl;
-            }
-            // senao navega para os filhos
-            else{
-                int nvlfilho=navegaPelosNodos1(ref.filhosDaEsquerda, altura);
-                nvlfilho=navegaPelosNodos1(ref.filhosDaDireita, nvlfilho);
-                return nvlfilho;
-            }
-        }
-        return altura;
-    }
-    //Node height
     private int navegaPelosNodos2(Nodo ref, int altura)
     {
 
@@ -407,6 +351,8 @@ public class ArvoreBinariaPesquisa
         // navega em largura
         // alternativas 1 e 2
         //return navegaPelosNodos2(raiz, -1);
+        if (nNodos == 0)
+            return -1;
 
         Integer[] largura = positionsWidth();
         int altura = level(largura[largura.length-1]);
@@ -441,26 +387,6 @@ public class ArvoreBinariaPesquisa
         else return null;
     }
     
-    private boolean isLeaf(Nodo ref)
-    {
-        if (ref == null) return false;
-        return (ref.filhosDaEsquerda == null && ref.filhosDaDireita == null); 
-    }
-
-    private Nodo[] allLeafNodes()
-    {
-        Nodo list[] = positionsWidth(true);
-        
-        Stack<Nodo> leafStack = new Stack<>();
-        
-        for (Nodo obj : list)
-        {
-            if (isLeaf(obj))
-                leafStack.push(obj);
-        }
-        
-        return leafStack.toArray(new Nodo[0]);
-    }
 
     
     public Integer[] positionsPre()
@@ -475,17 +401,29 @@ public class ArvoreBinariaPesquisa
         return resultado;
     }
     
-    public Integer[] positionsPre(Nodo ref)
+    public Nodo[] elementsOfBranch(Nodo ref)
     {
         if(nNodos==0) return null;
 
-        Integer[] resultado = new Integer[nNodos];
+        ArrayList<Nodo> lst = new ArrayList<>();
 
         //preordem(raiz, resultado, 0);
-        caminhamentoEmProfundidade(ref, resultado, 0, profundidade.Pre);
+        caminhamento(ref, lst);
 
-        return resultado;
+        return lst.toArray(new Nodo[0]);
     }
+
+    private void caminhamento(Nodo ref, ArrayList<Nodo> lst)
+    {
+        if (ref != null)
+        {
+            lst.add(ref);
+            caminhamento(ref.filhosDaEsquerda, lst);
+            caminhamento(ref.filhosDaDireita, lst);
+        }
+        return;
+    }
+
 
     public Integer[] positionsCentral()
     {
@@ -507,6 +445,18 @@ public class ArvoreBinariaPesquisa
 
         //posordem(raiz, resultado, 0);
         caminhamentoEmProfundidade(raiz, resultado, 0, profundidade.Pos);
+
+        return resultado;
+    }
+
+    public Integer[] positionsPos(Nodo ref)
+    {
+        if(nNodos==0) return null;
+
+        Integer[] resultado = new Integer[0];
+
+        //posordem(raiz, resultado, 0);
+        caminhamentoEmProfundidade(ref, resultado, 0, profundidade.Pos);
 
         return resultado;
     }
@@ -540,7 +490,7 @@ public class ArvoreBinariaPesquisa
             if(tipo==profundidade.Pos)
             {
                 // visito o nodo atual
-                lst[idx]=ref.valor;
+                lst[idx]= ref.valor;
                 idx++;
             }
         }
@@ -613,7 +563,7 @@ public class ArvoreBinariaPesquisa
 
         int[] valores1 = {40,20,10,30,60,70,50,35,33,37};
         for (int v : valores1)
-            avl.add(v);
+            avl.add(v); 
 
         imprimeTudo(avl);
 
@@ -656,7 +606,7 @@ public class ArvoreBinariaPesquisa
         System.out.println("\n--- Removendo subárvore de 30 ---");
         avl.removeBranch(30);
         imprimeTudo(avl);
-
+    
         System.out.println("\n--- Removendo subárvore de 70 ---");
         avl.removeBranch(70);
         imprimeTudo(avl);

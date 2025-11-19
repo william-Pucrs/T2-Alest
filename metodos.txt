@@ -1,0 +1,175 @@
+//contexto: arvore binaria de pesquisa, metodos abaixo, falta descrever seus parametros e comportamentos (vou passar nome e comportamento, faça somente um relatorio em cima)
+
+    public void add(Integer e)
+    {
+        Nodo aux = new Nodo(e);
+        if(nNodos==0)
+            raiz=aux;
+        else
+        {
+            Nodo pai = findFather(raiz, e);
+            aux.pai=pai;
+            // 10 >= 17 
+            if(aux.valor<=pai.valor)
+                pai.filhosDaEsquerda=aux;
+            else
+                pai.filhosDaDireita=aux;
+        }
+        aux.nivel = (aux != raiz) ? aux.pai.nivel+1 : 0;
+
+        updateAVL(aux);
+        checkAVLOnBranch(aux);
+
+        nNodos++;
+    }
+
+    private void updateAVL(Nodo ref)
+    {
+        while (ref != null)
+        {
+            ref.avl = -branchHeight(ref.filhosDaEsquerda) + branchHeight(ref.filhosDaDireita);
+            ref = ref.pai;
+        }
+    }
+
+     private boolean checkAVLOnBranch(Nodo ref)
+    {
+        boolean hadTransformation = false;
+
+        while (ref != null) 
+        {
+            if (Math.abs(ref.avl) > 1)
+            {
+                hadTransformation = true;
+
+                if (ref.avl > 0)
+                {
+                    if (ref.filhosDaDireita.avl < 0)
+                        rightRotation(ref.filhosDaDireita);
+                    ref = leftRotation(ref);
+                }
+                else
+                {
+                    if (ref.filhosDaEsquerda.avl > 0)
+                        leftRotation(ref.filhosDaEsquerda); 
+                    ref = rightRotation(ref);
+                }
+            }
+            ref = ref.pai;
+        }
+
+        return hadTransformation;    
+    }
+
+     public boolean removeBranch(Integer e)
+    {
+        Nodo removedNode = findNode(raiz, e);
+
+        if (removedNode == null) return false;
+
+        Nodo father = removedNode.pai;
+        
+        int numOfRemovedNodes = elementsOfBranch(removedNode).length;
+
+        if (father.filhosDaDireita == removedNode)
+            father.filhosDaDireita = null;
+        else
+            father.filhosDaEsquerda = null;
+
+        removedNode.pai = null;
+
+        updateAVL(father);
+        checkAVLOnBranch(father);
+
+        nNodos -= numOfRemovedNodes;
+        return true;
+    }
+
+private Nodo leftRotation(Nodo ref)
+    {
+        Nodo branchRoot = ref.pai;
+        
+        Nodo substitute = ref.filhosDaDireita;
+        Nodo T2 = substitute.filhosDaEsquerda;
+
+        if (branchRoot != null)
+        {
+            if (branchRoot.filhosDaDireita == ref)
+                branchRoot.filhosDaDireita = substitute;
+            else
+                branchRoot.filhosDaEsquerda = substitute;
+        }
+        else
+        {
+            raiz = substitute;
+        }
+
+        ref.filhosDaDireita = T2;
+        substitute.filhosDaEsquerda = ref;
+        substitute.pai = branchRoot;
+        ref.pai = substitute;
+        
+        if (T2 != null)
+            T2.pai = ref;
+                                    
+        updateAVL(ref);
+        return substitute;
+    }
+
+    private Nodo rightRotation(Nodo ref)
+    {
+        Nodo branchRoot = ref.pai;
+        Nodo substitute = ref.filhosDaEsquerda;
+        Nodo T2 = substitute.filhosDaDireita;
+
+        if (branchRoot != null)
+        {
+            if (branchRoot.filhosDaDireita == ref)
+                branchRoot.filhosDaDireita = substitute;
+            else
+                branchRoot.filhosDaEsquerda = substitute;
+        }
+        else
+        {
+            raiz = substitute;
+        }
+
+        substitute.pai = branchRoot;
+        ref.pai = substitute;
+        ref.filhosDaEsquerda = T2;
+        substitute.filhosDaDireita = ref;
+
+        if (T2 != null)
+            T2.pai = ref;
+        
+        updateAVL(ref);
+        return substitute;
+    }
+
+    public int branchHeight(Nodo ref)
+    {
+        return navegaPelosNodos2(ref, -1);
+    }
+
+        public Nodo[] elementsOfBranch(Nodo ref)
+    {
+        if(nNodos==0) return null;
+
+        ArrayList<Nodo> lst = new ArrayList<>();
+
+        //preordem(raiz, resultado, 0);
+        caminhamento(ref, lst);
+
+        return lst.toArray(new Nodo[0]);
+    }
+
+    private void caminhamento(Nodo ref, ArrayList<Nodo> lst)
+    {
+        if (ref != null)
+        {
+            lst.add(ref);
+            caminhamento(ref.filhosDaEsquerda, lst);
+            caminhamento(ref.filhosDaDireita, lst);
+        }
+        return;
+    }
